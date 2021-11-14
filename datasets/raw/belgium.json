@@ -1,0 +1,10 @@
+{
+    "info" : {
+        "text" : "scenario based on a CO2 price of 60 Euro in 2030",
+        "price" : "60",
+        "unit" : "Euro"
+    },
+    "column names" : [
+        "bar number", "price", "decile", "payment/revenue"
+        ]
+}
