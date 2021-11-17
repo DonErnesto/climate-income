@@ -1,0 +1,6 @@
+{"text" : "scenario based on a CO2 price of 40 GBP Euro per tCO2",
+"price" : "40",
+"time_unit" : "year",
+"price_unit" : "GBP",
+"origin" : "Original data used for Fig 9. in https://www.lse.ac.uk/granthaminstitute/wp-content/uploads/2019/07/GRI_Global-lessons-in-carbon-taxes-for-the-UK_policy-brief.pdf"
+}

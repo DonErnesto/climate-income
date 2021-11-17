@@ -1,10 +1,6 @@
-{
-    "info" : {
-        "text" : "scenario based on a CO2 price of 60 Euro in 2030",
-        "price" : "60",
-        "unit" : "Euro"
-    },
-    "column names" : [
-        "bar number", "price", "decile", "payment/revenue"
-        ]
+{"text" : "scenario based on a CO2 price of 60 Euro per tCO2 in 2030",
+"price" : "60",
+"time_unit" : "year",
+"price_unit" : "Euro",
+"origin" : "CCL Google drive (Belgium 211006 Distributive impacts carbon pricing BRT-1.pdf), data grabbed from barchart with https://apps.automeris.io/wpd/"
 }
