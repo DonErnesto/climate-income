@@ -19,7 +19,7 @@ st_deciles_quintiles = st.sidebar.selectbox('Quantiles', ['deciles', 'quintiles'
 st_orientation = st.sidebar.selectbox('Orientation', ['horizontal', 'vertical'], index=0)
 st_plot_type = st.sidebar.selectbox('Plot type', ['bars', 'bars and line'], index=1)
 st_fig_size_width = st.sidebar.selectbox('Plot width', [600, 800, 1000], index=1)
-st_fig_size_height = st.sidebar.selectbox('Plot height', [400, 600, 600, 1000], index=1)
+st_fig_size_height = st.sidebar.selectbox('Plot height', [500, 600, 600, 1000], index=1)
 
 st_reverse_quantiles = st.sidebar.checkbox('Reverse quantile ordering')
 st_payment_negative = st.sidebar.checkbox('Plot payments as negative values')
