@@ -14,11 +14,12 @@ x_title, y_title = 'Transaction Volume', 'AUM'
 # titles
 
 #st.title('Country')
-st_country = st.sidebar.selectbox('Country', ['belgium', 'uk'])
-st_deciles_quintiles = st.sidebar.selectbox('Quantiles', ['deciles', 'quintiles'])
-st_orientation = st.sidebar.selectbox('Orientation', ['horizontal', 'vertical'])
-st_plot_type = st.sidebar.selectbox('Plot type', ['bars', 'bars and line'])
-
+st_country = st.sidebar.selectbox('Country', ['belgium', 'uk'], index=1)
+st_deciles_quintiles = st.sidebar.selectbox('Quantiles', ['deciles', 'quintiles'], index=1)
+st_orientation = st.sidebar.selectbox('Orientation', ['horizontal', 'vertical'], index=0)
+st_plot_type = st.sidebar.selectbox('Plot type', ['bars', 'bars and line'], index=1)
+st_fig_size_width = st.sidebar.selectbox('Plot width', [600, 800, 1000], index=1)
+st_fig_size_height = st.sidebar.selectbox('Plot height', [400, 600, 600, 1000], index=1)
 
 st_reverse_quantiles = st.sidebar.checkbox('Reverse quantile ordering')
 st_payment_negative = st.sidebar.checkbox('Plot payments as negative values')
@@ -31,8 +32,8 @@ xlabel_quantile_dict = {'deciles': 'Income Decile',
                         'quintiles': 'Income Quintile'}
 
 rgb_dict = {'carbon payment': 'rgb(122, 138, 184)',
-            'carbon revenue': 'rgb(69, 161, 69)',
-            'net gain': 'rgb(128, 179, 128)'
+            'carbon revenue': 'rgb(128, 179, 128)',
+            'net gain': 'rgb(69, 161, 69)'
             }
 def load_data():
     file_name = os.path.join(r'datasets', f'{st_country}.csv')
@@ -149,7 +150,9 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
         bargap=0.15, # gap between bars of adjacent location coordinates.
         bargroupgap=bargroupgap, # gap between bars of the same location coordinate.,
         paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(200, 220, 220)'
+        plot_bgcolor='rgb(200, 220, 220)',
+        width=st_fig_size_width,
+        height=st_fig_size_height,
     )
     st.plotly_chart(fig)
 
@@ -202,6 +205,7 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
                             name=name,
                             orientation=orientation,
                             line_color=rgb,
+                            line_width=3,
                             #text = ['carbon revenue'] + ['']*(len(df)-1),
                             marker=dict(size=1),
                             mode='lines+markers'
@@ -268,12 +272,12 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
     annotations.append(dict(xref='x', yref='y',
                             x=space + x_loc, y=y_loc,
                             text= f'revenue: {value:.0f}',
-                            font=dict(family='Arial', size=14,
+                            font=dict(family='Arial', size=16,
                                       color="rgb(240, 250, 240)"),
                             showarrow=False,
                             textangle=textangle,
-                            bgcolor=rgb_dict.get('climate revenue', 'rgb(100,100,100)'),
-                            opacity=0.7
+                            bgcolor=rgb_dict.get('carbon revenue', 'rgb(100,100,100)'),
+                            opacity=0.9
                             ))
 
 
@@ -304,7 +308,9 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
         bargap=0.15, # gap between bars of adjacent location coordinates.
         bargroupgap=bargroupgap, # gap between bars of the same location coordinate.,
         paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(200, 220, 220)'
+        plot_bgcolor='rgb(200, 220, 220)',
+        width=st_fig_size_width,
+        height=st_fig_size_height,
     )
     st.plotly_chart(fig)
 
