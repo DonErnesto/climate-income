@@ -29,12 +29,11 @@ title_country_dict = {'belgium': 'Belgium',
                         'uk': 'UK'}
 xlabel_quantile_dict = {'deciles': 'Income Decile',
                         'quintiles': 'Income Quintile'}
-@st.cache
+
 def load_data():
     file_name = os.path.join(r'datasets', f'{st_country}.csv')
     return pd.read_csv(file_name) #pd.read_csv(file_name, index_col='income decile')
 
-@st.cache
 def load_metadata():
     file_name = os.path.join(r'datasets/raw', f'{st_country}.json')
     with open(file_name, "r") as jsonfile:
