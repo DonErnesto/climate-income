@@ -282,9 +282,9 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
         textangle = 0
     annotations.append(dict(xref='x', yref='y',
                             x=space + x_loc, y=y_loc,
-                            xanchor='left',
+                            xanchor='center',
                             yanchor='bottom',
-                            text= f'Climate income: {value:.0f}',
+                            text= f'Climate Income: {value:.0f}',
                             font=dict(family='Arial', size=16,
                                       color="rgb(240, 250, 240)"),
                             showarrow=False,
