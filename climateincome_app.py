@@ -17,7 +17,7 @@ x_title, y_title = 'Transaction Volume', 'AUM'
 st_country = st.sidebar.selectbox('Country', ['belgium', 'uk'], index=1)
 st_deciles_quintiles = st.sidebar.selectbox('Quantiles', ['deciles', 'quintiles'], index=1)
 st_orientation = st.sidebar.selectbox('Orientation', ['horizontal', 'vertical'], index=0)
-st_plot_type = st.sidebar.selectbox('Plot type', ['bars', 'bars and line'], index=1)
+st_plot_type = st.sidebar.selectbox('Plot type', ['bars', 'bars and line', 'lines and delta'], index=1)
 st_fig_size_width = st.sidebar.selectbox('Plot width', [600, 800, 1000], index=1)
 st_fig_size_height = st.sidebar.selectbox('Plot height', [500, 600, 600, 1000], index=1)
 
@@ -31,10 +31,20 @@ title_country_dict = {'belgium': 'Belgium',
 xlabel_quantile_dict = {'deciles': 'Income Decile',
                         'quintiles': 'Income Quintile'}
 
+col_list = ['carbon revenue', 'carbon payment', 'net gain']
+
 rgb_dict = {'carbon payment': 'rgb(122, 138, 184)',
             'carbon revenue': 'rgb(128, 179, 128)',
             'net gain': 'rgb(69, 161, 69)'
             }
+
+name_dict =  {'carbon payment': 'Payment',
+            'carbon revenue': 'Climate Income',
+            'net gain' : 'Net gain'}
+
+paper_bgcolor='rgb(248, 248, 255)'
+plot_bgcolor='rgb(248, 248, 255)'
+
 def load_data():
     file_name = os.path.join(r'datasets', f'{st_country}.csv')
     return pd.read_csv(file_name) #pd.read_csv(file_name, index_col='income decile')
@@ -53,10 +63,6 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
     #df = df.sort_values('income decile', ascending=True)
     bargroupgap = 0.15
     idx = df['income decile']
-    col_list = ['carbon payment', 'carbon revenue', 'net gain']
-    name_list = ['Payment', 'Revenue', 'Net gain']
-    rgb_list = ['rgb(180, 100, 100)', 'rgb(100, 180, 100)', 'rgb(80, 100, 180)']
-
     money_title, quantile_title = (f"Payment/Revenue ({meta_data['price_unit']}/year)",
                                     xlabel_quantile_dict[st_deciles_quintiles])
     x_axis_title = money_title if orientation == 'h' else quantile_title
@@ -64,8 +70,9 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
 
     fig = go.Figure()
 
-    for col, name in zip(col_list, name_list):
+    for col in col_list:
         rgb = rgb_dict.get(col, 'rgb(100,100,100)')
+        name = name_dict.get(col)
         if orientation == 'v':
             x = idx
             if payment_negative and col == 'carbon payment':
@@ -124,6 +131,11 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
                                               color='rgb(240, 240, 250)'),
                                     showarrow=False))
     fig.update_layout(annotations=annotations)
+    if orientation == 'h':
+        xtickvals, ytickvals = None, np.arange(1, len(idx)+1)
+    else:
+        xtickvals, ytickvals = np.arange(1, len(idx)+1), None
+
     fig.update_layout(
         title=dict(
             text=f'Yearly carbon fee and carbon revenue, {title_country_dict.get(st_country)}',
@@ -134,11 +146,13 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
         yaxis=dict(
             title=y_axis_title,
             titlefont_size=16,
-            tickfont_size=14
+            tickfont_size=14,
+            tickvals=ytickvals
         ),
         xaxis=dict(
             title=x_axis_title,
             titlefont_size=16,
+            tickvals=xtickvals
         ),
         legend=dict(
             x=1.0,
@@ -149,8 +163,8 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
         barmode='group',
         bargap=0.15, # gap between bars of adjacent location coordinates.
         bargroupgap=bargroupgap, # gap between bars of the same location coordinate.,
-        paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(200, 220, 220)',
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=paper_bgcolor,
         width=st_fig_size_width,
         height=st_fig_size_height,
     )
@@ -162,10 +176,6 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
     #df = df.sort_values('income decile', ascending=True)
     bargroupgap = 0.15
     idx = df['income decile']
-    col_list = ['carbon revenue', 'carbon payment', 'net gain']
-    name_list = ['Revenue', 'Payment', 'Net gain']
-    rgb_list = ['rgb(100, 180, 100)', 'rgb(180, 100, 100)',  'rgb(80, 100, 180)']
-
     money_title, quantile_title = (f"Payment/Revenue ({meta_data['price_unit']}/year)",
                                     xlabel_quantile_dict[st_deciles_quintiles])
     x_axis_title = money_title if orientation == 'h' else quantile_title
@@ -173,8 +183,9 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
 
     fig = go.Figure()
 
-    for col, name in zip(col_list, name_list):
+    for col in col_list:
         rgb = rgb_dict.get(col, 'rgb(100,100,100)')
+        name = name_dict.get(col)
 
         if orientation == 'v':
             x = idx
@@ -260,18 +271,20 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
     # add line text
     col_i, col = 0, col_list[0]
     if orientation == 'h':
-        x_loc = 1.05 * df.loc[:, col].mean()
+        x_loc = df.loc[:, col].mean()
         y_loc = idx.mean()
         value = x_loc
         textangle = 90
     else:
-        y_loc = 1.05* df.loc[:, col].mean()
+        y_loc = df.loc[:, col].mean()
         x_loc = idx.mean()
         value = y_loc
         textangle = 0
     annotations.append(dict(xref='x', yref='y',
                             x=space + x_loc, y=y_loc,
-                            text= f'revenue: {value:.0f}',
+                            xanchor='left',
+                            yanchor='bottom',
+                            text= f'Climate income: {value:.0f}',
                             font=dict(family='Arial', size=16,
                                       color="rgb(240, 250, 240)"),
                             showarrow=False,
@@ -282,6 +295,11 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
 
 
     fig.update_layout(annotations=annotations)
+    if orientation == 'h':
+        xtickvals, ytickvals = None, np.arange(1, len(idx)+1)
+    else:
+        xtickvals, ytickvals = np.arange(1, len(idx)+1), None
+
     fig.update_layout(
         title=dict(
             text=f'Yearly carbon fee and carbon revenue, {title_country_dict.get(st_country)}',
@@ -292,11 +310,13 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
         yaxis=dict(
             title=y_axis_title,
             titlefont_size=16,
-            tickfont_size=14
+            tickfont_size=14,
+            tickvals=ytickvals
         ),
         xaxis=dict(
             title=x_axis_title,
             titlefont_size=16,
+            tickvals=xtickvals
         ),
         legend=dict(
             x=1.0,
@@ -307,13 +327,146 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
         barmode='group',
         bargap=0.15, # gap between bars of adjacent location coordinates.
         bargroupgap=bargroupgap, # gap between bars of the same location coordinate.,
-        paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(200, 220, 220)',
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=paper_bgcolor,
         width=st_fig_size_width,
         height=st_fig_size_height,
     )
     st.plotly_chart(fig)
 
+
+def make_line_delta_plot(df, meta_data, orientation='h'):
+    line_col_list = ['carbon revenue', 'carbon payment']
+
+    #df = df.sort_values('income decile', ascending=True)
+    bargroupgap = 0.15
+    idx = df['income decile']
+    money_title, quantile_title = (f"Payment/Revenue ({meta_data['price_unit']}/year)",
+                                    xlabel_quantile_dict[st_deciles_quintiles])
+    x_axis_title = money_title if orientation == 'h' else quantile_title
+    y_axis_title = quantile_title if orientation == 'h' else money_title
+
+    fig = go.Figure()
+    for col in line_col_list:
+        rgb = rgb_dict.get(col, 'rgb(100,100,100)')
+        name = name_dict.get(col)
+
+        if orientation == 'v':
+            x = idx
+            y = df[col]
+            values = y
+        else:
+            y = idx
+            x = df[col]
+            values = x
+
+        text_array = [f'{val:.0f}' for val in values] if col == 'carbon payment' else \
+                [f'{val:.0f}' if i == 0 else '' for i, val in enumerate(values)]
+        mode = 'lines+markers+text' if col == 'carbon payment' else 'lines+markers+text'
+
+        textposition = "top center" if orientation == 'h' else "middle left"
+        fig.add_trace(go.Scatter(x=x,
+                        y=y,
+                        name=name,
+                        orientation=orientation,
+                        line_color=rgb,
+                        line_width=3,
+                        marker=dict(size=20),
+                        mode=mode,
+                        text=text_array,
+                        textfont=dict(size=15),
+                        textposition=textposition,
+                        ))
+
+
+    # fig.show()
+    #fig.update_yaxes(categoryorder='array', categoryarray=np.arange(1, 6))
+    if st_reverse_quantiles:
+        if orientation == 'h':
+            fig.update_yaxes(autorange="reversed")
+        else:
+            fig.update_xaxes(autorange="reversed")
+
+    annotations = []
+    space = 0
+    for i, (y0, y1) in enumerate(zip(df['carbon payment'], df['carbon revenue'])):
+        value = y1 - y0
+        if orientation == 'h':
+            x_min, x_max = y0, y1
+            y_min, y_max = i + 1, i + 1
+        else:
+            y_min, y_max = y0, y1
+            x_min, x_max = i + 1, i + 1
+
+        # Add arrow
+        annotations.append(dict(xref='x', yref='y',
+                                ax=x_min, x=x_max,
+                                ay=y_min, y=y_max,
+                                axref='x', ayref='y',
+                                text= "",#f'{value:.0f}' ,
+                                font=dict(family='Arial', size=14,
+                                          color=rgb_dict.get('carbon revenue')),
+                                xanchor='left',
+                                yanchor='bottom',
+                                arrowhead = 5,
+                                arrowwidth=4,
+                                arrowcolor=rgb_dict.get('net gain'),
+                                showarrow=True))
+        # Add text
+        annotations.append(dict(xref='x', yref='y',
+                                x=(x_min+x_max)/2,
+                                y=(y_min+y_max)/2,
+                                xanchor='left',
+                                yanchor='top',
+                                text= f'{value:.0f}',
+                                font=dict(family='Arial', size=16,
+                                          color="rgb(240, 250, 240)"),
+                                showarrow=False,
+                                textangle=0,
+                                bgcolor=rgb_dict.get('carbon revenue', 'rgb(100,100,100)'),
+                                opacity=0.8
+                                ))
+
+
+    fig.update_layout(annotations=annotations)
+    if orientation == 'h':
+        xtickvals, ytickvals = None, np.arange(1, len(idx)+1)
+    else:
+        xtickvals, ytickvals = np.arange(1, len(idx)+1), None
+
+    fig.update_layout(
+        title=dict(
+            text=f'Yearly carbon fee and carbon revenue, {title_country_dict.get(st_country)}',
+            xanchor='center',
+            x=0.5,
+        ),
+        titlefont_size=20,
+        yaxis=dict(
+            title=y_axis_title,
+            titlefont_size=16,
+            tickfont_size=14,
+            tickvals=ytickvals
+        ),
+        xaxis=dict(
+            title=x_axis_title,
+            titlefont_size=16,
+            tickvals=xtickvals
+        ),
+        legend=dict(
+            x=1.0,
+            y=1.05,
+            bgcolor='rgba(200, 200, 210, 0.15)',
+            bordercolor='rgba(255, 255, 255, 0)'
+        ),
+        barmode='group',
+        bargap=0.15, # gap between bars of adjacent location coordinates.
+        bargroupgap=bargroupgap, # gap between bars of the same location coordinate.,
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=paper_bgcolor,
+        width=st_fig_size_width,
+        height=st_fig_size_height,
+    )
+    st.plotly_chart(fig)
 
 
 #if st.checkbox('Show dataframe'):
@@ -324,7 +477,9 @@ meta_data = load_metadata()
 
 if st_plot_type == 'bars':
     make_barplot(chart_data, meta_data, orientation=orientation)
-else:
+elif st_plot_type == 'bars and line':
     make_bar_lineplot(chart_data, meta_data, orientation=orientation)
+else:
+    make_line_delta_plot(chart_data, meta_data, orientation=orientation)
 meta_data['text']
 meta_data['origin']
