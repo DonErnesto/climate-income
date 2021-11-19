@@ -30,6 +30,10 @@ title_country_dict = {'belgium': 'Belgium',
 xlabel_quantile_dict = {'deciles': 'Income Decile',
                         'quintiles': 'Income Quintile'}
 
+rgb_dict = {'carbon payment': 'rgb(122, 138, 184)',
+            'carbon revenue': 'rgb(69, 161, 69)',
+            'net gain': 'rgb(128, 179, 128)'
+            }
 def load_data():
     file_name = os.path.join(r'datasets', f'{st_country}.csv')
     return pd.read_csv(file_name) #pd.read_csv(file_name, index_col='income decile')
@@ -59,7 +63,8 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
 
     fig = go.Figure()
 
-    for col, rgb, name in zip(col_list, rgb_list, name_list):
+    for col, name in zip(col_list, name_list):
+        rgb = rgb_dict.get(col, 'rgb(100,100,100)')
         if orientation == 'v':
             x = idx
             if payment_negative and col == 'carbon payment':
@@ -91,7 +96,6 @@ def make_barplot(df, meta_data, orientation='h', payment_negative=st_payment_neg
     annotations = []
     space = 0
     for col_i, col in enumerate(col_list):
-
         for i in range(0, len(idx)):
             # labeling the rest of percentages for each bar (x_axis)
             if orientation == 'h':
@@ -166,7 +170,9 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
 
     fig = go.Figure()
 
-    for col, rgb, name in zip(col_list, rgb_list, name_list):
+    for col, name in zip(col_list, name_list):
+        rgb = rgb_dict.get(col, 'rgb(100,100,100)')
+
         if orientation == 'v':
             x = idx
             if payment_negative and col == 'carbon payment':
@@ -266,8 +272,8 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
                                       color="rgb(240, 250, 240)"),
                             showarrow=False,
                             textangle=textangle,
-                            bgcolor="rgb(10, 100, 10)",
-                            opacity=0.5
+                            bgcolor=rgb_dict.get('climate revenue', 'rgb(100,100,100)'),
+                            opacity=0.7
                             ))
 
 
@@ -303,53 +309,6 @@ def make_bar_lineplot(df, meta_data, orientation='h', payment_negative=st_paymen
     st.plotly_chart(fig)
 
 
-def plot_data(df, meta_data):
-    idx_list = df.index
-
-    #x = df['income decile'] #don't set as index. easier for now
-    x = df.index
-    y_payments = - df['carbon payment']
-    y_income = df['carbon revenue']
-    y_gain = df['net gain']
-    fig = go.Figure()
-    fig.add_trace(go.Bar(y=x,
-                    x=y_payments,
-                    name='Payments',
-                    marker_color='rgb(180, 83, 20)',
-                    orientation='h'
-                    ))
-    fig.add_trace(go.Bar(y=x,
-                    x=y_income,
-                    name='Income',
-                    marker_color='rgb(26, 180, 40)',
-                    orientation='h'
-                    ))
-    fig.add_trace(go.Bar(y=x,
-                    x=y_gain,
-                    name='Net gain',
-                    marker_color='rgb(80, 100, 220)',
-                    orientation='h'
-                    ))
-    fig.update_layout(
-        title=dict(
-            text=f'Yearly carbon fee and carbon revenue, {title_country_dict.get(country)}'
-            ),
-        xaxis_tickfont_size=20,
-        yaxis_tickfont_size=20,
-        yaxis_title = f"Payment/Revenue, {meta_data['price_unit']}/year",
-        xaxis_title=xlabel_quantile_dict[st_deciles_quintiles],
-        legend=dict(
-            x=0,
-            y=0.0,
-            bgcolor='rgba(255, 255, 255, 0.5)',
-            bordercolor='rgba(255, 255, 255, 0)'
-        ),
-        barmode='group',
-        bargap=0.15, # gap between bars of adjacent location coordinates.
-        bargroupgap=0.05 # gap between bars of the same location coordinate.
-    )
-    # fig.show()
-    st.plotly_chart(fig)
 
 #if st.checkbox('Show dataframe'):
 chart_data = load_data()
